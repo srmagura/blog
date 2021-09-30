@@ -1,5 +1,3 @@
-# The Great Redux Toolkit Debate
-
 An [offhand comment](https://dev.to/srmagura/comment/1idl8) I wrote one day while eating lunch sparked an unexpected and interesting debate with [Mark Erikson](https://twitter.com/acemarke), one of the maintainers of Redux.
 
 [Redux](https://redux.js.org/) has long been the go-to library for managing global state in React applications. [Redux Toolkit](https://redux-toolkit.js.org/), which Mark helped create, is a relatively new library that aims to be the "official, opinionated, batteries-included toolset for efficient Redux development." This post will go into my thoughts on the benefits and potential drawbacks of Redux Toolkit.
@@ -66,7 +64,7 @@ I'm concerned that `createEntityAdapter` could lead to designs that are overly C
 
 RTK Query really is a separate library that happens to live in the same package as Redux Toolkit. I think it would be better as a separate package, but that's just me. Fortunately, RTK Query is exported from a separate entry point, so it will never be included in your bundle if you don't use it.
 
-RTK Query seems complex and unintuitive to me, but my opinion might change if I tried it out. If you're looking for an alternative, you might like [React Query](https://react-query.tanstack.com/). I also evaluated the similar [SWR](https://swr.vercel.app/) library but found it lacking some features that my team uses constantly.
+RTK Query seems complex to me, but my opinion might change if I tried it out. If you're looking for a data fetching solution, you should also consider [React Query](https://react-query.tanstack.com/). I evaluated the similar [SWR](https://swr.vercel.app/) library but found it lacking some features that my team uses constantly.
 
 ## Mark's Response to my Claim that RTK is Overly Opinionated
 
@@ -101,7 +99,7 @@ This app has to work offline so it made sense to put the majority of the app's s
 
 New projects are always exciting because they give you the chance to rethink your architecture and tech stack. Going forward, we will:
 
-- Stick with typesafe-actions and `switch` reducers. It was a close call between this and switching to Redux Toolkit's `createAction` and `createReducer`.
+- Stick with typesafe-actions and `switch` reducers. It was a close call between this and switching to Redux Toolkit's `createAction` and `createReducer`. **Update: The RTK team has succeeded in convincing me to give `createReducer` and `createSlice` a shot!**
 - Replace our homegrown `useQuery` with React Query. As a result, some state that we would have previously put in Redux will now be stored automatically in React Query's cache.
 - Continue to use Redux Saga in a few places.
 
