@@ -2,12 +2,12 @@
 
 An [offhand comment](https://dev.to/srmagura/comment/1idl8) I wrote one day while eating lunch sparked an unexpected and interesting debate with [Mark Erikson](https://twitter.com/acemarke), one of the maintainers of Redux.
 
-[Redux](https://redux.js.org/) has long been the go-to library for managing global state in React applications. [Redux Toolkit](https://redux-toolkit.js.org/), which Mark helped create, is a relatively new library that aims to be the "official, opinionated, batteries-included toolset for efficient Redux development". This post will go into my thoughts on the benefits and potential drawbacks of Redux Toolkit.
+[Redux](https://redux.js.org/) has long been the go-to library for managing global state in React applications. [Redux Toolkit](https://redux-toolkit.js.org/), which Mark helped create, is a relatively new library that aims to be the "official, opinionated, batteries-included toolset for efficient Redux development." This post will go into my thoughts on the benefits and potential drawbacks of Redux Toolkit.
 
 ## Why Redux is Awesome
 
 1. **It's unopinionated.** Redux requires you to put your global state in a store, and to manage that state via reducers and actions. An action is a simple JavaScript object with a `type` property, and a reducer is a pure function that transforms the old state into the new state based on an action. Beyond this, everything else is up to you.
-2. **It has a minimal API surface.** Redux only has [5 top-level exports](https://redux.js.org/api/api-reference), and only one of those, `createStore`, is truly essential.
+2. **It has a minimal API surface.** Redux only has [5 top-level exports](https://redux.js.org/api/api-reference), and only one of those, `createStore`, is essential.
 3. **It's extremely versatile.** Do you want your store to contain only the ID of the current user? Or do you want your store to track the state of every entity, page, widget, and input in your massive enterprise app? Whatever your use case, Redux and its large ecosystem have you covered.
 
 ## Why Redux is Hard
@@ -20,10 +20,10 @@ Redux is hard for the same reasons it is awesome.
 
 ## Redux Toolkit to the Rescue
 
-Redux Toolkit aims to eliminate these pain points by providing an opinionated, convenient, and beginner-friendly approach to Redux development. Its features include:
+Redux Toolkit aims to eliminate first two of these pain points by providing an opinionated, convenient, and beginner-friendly approach to Redux development. Its features include:
 
-- `createAction` — lets you define action creators, similar to [typesafe-actions](https://github.com/piotrwitek/typesafe-actions). (Warning: I'm a TypeScript die-hard so type safety is non-negotiable. 😆)
-- `createReducer` — allows you to write a reducer without a `switch` statement. Uses [Immer](https://immerjs.github.io/immer/) under the hood. **Immer is amazing and you should use it in your reducers even if you don't plan to use Redux Toolkit.**
+- `createAction` — lets you define action creators, similar to [typesafe-actions](https://github.com/piotrwitek/typesafe-actions). I'm a TypeScript die-hard so type safety is non-negotiable. 😆
+- `createReducer` — allows you to write a reducer without a `switch` statement. Uses [Immer](https://immerjs.github.io/immer/) under the hood. Immer is amazing and you should use it in your reducers even if you don't plan to use Redux Toolkit.
 - `createSlice` — a powerful helper that allows you to define both the reducer and actions for a slice of your state in one fell swoop.
 - `createAsyncThunk` — allows you to start an API call in response to an action and dispatch another action when the call completes.
 - `createEntityAdapter` — returns a set of prebuilt reducers and selector functions for performing CRUD on an entity.
@@ -70,7 +70,7 @@ RTK Query seems complex and unintuitive to me, but my opinion might change if I 
 
 ## Mark's Response to my Claim that RTK is Overly Opinionated
 
-[Read the full comment here! It's great.](https://dev.to/markerikson/comment/1ieni) In summary:
+[Read the full comment here!](https://dev.to/markerikson/comment/1ieni) In summary:
 
 > As you can see, all of these APIs have a common theme:
 >
@@ -84,26 +84,26 @@ RTK Query seems complex and unintuitive to me, but my opinion might change if I 
 
 These are all medium-size single-page apps written entirely in React.
 
-- Redux is used for about 10% of the overall application state, with local component state making up the other 90%. We deliberately only use Redux for state that needs to stay in memory when navigating between screens, like information about the current user.
-- We constructed our actions and reducers with typesafe-actions, Immer, and `switch` statements, whether using Redux or the built-in `useReducer` hook.
-- There's a dash of Redux Saga to support login and persisting changes to complex order drafts that the user creates.
+- Redux is used for about 10% of the overall application state, with local component state making up the other 90%. We deliberately only use Redux for state that needs to stay in memory when navigating between screens, for example information about the current user.
+- We constructed our actions and reducers with typesafe-actions, Immer, and `switch` statements, whether using Redux or `useReducer`.
 - A simple custom-made `useQuery` hook is used to fetch data from the backend. This data ends up in the local state of our `Page` components.
+- There's a dash of Redux Saga to support login and persisting changes to complex order drafts that the user creates.
 
 ### My React Native App
 
 This app has to work offline so it made sense to put the majority of the app's state in Redux.
 
 - Redux Saga is responsible for all the interaction with the backend API. This worked out quite well. There's a pretty complex saga for sending queued operations to the backend when a user comes back from being offline.
-- The entire Redux store is persisted using [redux-persist](https://www.npmjs.com/package/redux-persist). (This is still magic to me 😂.)
+- The entire Redux store is persisted using [redux-persist](https://www.npmjs.com/package/redux-persist). This is still magic to me 😂.
 - Local component state is used for forms.
 
 ### My Next React Web App
 
-New projects are always exciting because they give you the chance to rethink your architecture and tech stack. Going forward, we'll be:
+New projects are always exciting because they give you the chance to rethink your architecture and tech stack. Going forward, we will:
 
-- Sticking with typesafe-actions and `switch` reducers. It was a close call between this and switching to Redux Toolkit's `createAction` and `createReducer`.
-- Replacing our homegrown `useQuery` with React Query. As a result, some state that we would have previously put in Redux will now be stored automatically in React Query's cache.
-- Continuing to use Redux Saga in a few places.
+- Stick with typesafe-actions and `switch` reducers. It was a close call between this and switching to Redux Toolkit's `createAction` and `createReducer`.
+- Replace our homegrown `useQuery` with React Query. As a result, some state that we would have previously put in Redux will now be stored automatically in React Query's cache.
+- Continue to use Redux Saga in a few places.
 
 ## Further Reading
 
