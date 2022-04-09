@@ -1,3 +1,5 @@
+# C# Linting and Formatting Tools in 2021
+
 **tl;dr: Use SonarLint and optionally StyleCop.**
 
 The JavaScript ecosystem has amazing tools for formatting and statically analyzing your code: [Prettier](https://prettier.io/) and [ESLint](https://eslint.org/). Both tools have nearly universal adoption and deliver significant value.
@@ -40,16 +42,10 @@ In dotnet-format's defense:
 
 ### Setup Instructions
 
-These instructions are adapted from [this blog post](https://medium.com/@michaelparkerdev/linting-c-in-2019-stylecop-sonar-resharper-and-roslyn-73e88af57ebd).
-
 Create a `Directory.Build.props` file next to your solution file and paste in the following XML.
 
 ```xml
 <Project>
-  <PropertyGroup>
-    <CodeAnalysisRuleSet>$(SolutionDir)MyRuleset.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-
   <ItemGroup>
     <PackageReference
       Include="StyleCop.Analyzers"
@@ -63,17 +59,17 @@ Create a `Directory.Build.props` file next to your solution file and paste in th
 
 This adds the StyleCop.Analyzers NuGet package to every project in your solution. You should update the version number to whatever the latest is on NuGet.org. 1.2.0 introduces support for the latest C# features, so I recommend it even though it is still technically in beta.
 
-Next, add a `MyRuleset.ruleset` file, also in the same directory as your solution file. I recommend opening the ruleset file with the XML editor rather than Visual Studio's ruleset GUI. [Here's my ruleset file, which you're welcome to copy.](https://gist.github.com/srmagura/d7b4df132d48087b25243fbdd1d44b37) If you'd like to build your own ruleset, simply copy my ruleset and delete all of the `<Rule />` elements.
+Next, add an `.editorconfig` file, also in the same directory as your solution file. `.editorconfig` is Microsoft's recommended way of configuring analyzers — `.ruleset` files are now deprecated. You can use Visual Studio's `.editorconfig` GUI to tweak the Formatting and Code Style settings, but a text editor is much more convenient for configuring analyzers. [Here's my `.editorconfig` file, which you're welcome to copy.](https://gist.github.com/srmagura/234c41af2de14568c5cdef841c71a29b)
 
 Finally, rebuild the solution. StyleCop's suggestions will appear in the Error List and you'll get green Intellisense squigglies.
 
 ### Fixing StyleCop's Suggestions
 
-**StyleCop's default ruleset is extremely opinionated and I recommend disabling rules that don't bring value to your team.** For example, the [SA1200](https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1200.md) rule requires that `using` statements be placed within the `namespace` declaration. While there's nothing wrong with this coding style, it's not widely used since Visual Studio puts `using` statements outside the namespace when you create a new C# file. Both conventions are [equally valid](https://stackoverflow.com/q/125319/752601), so I recommend disabling this rule. You can do this by adding an element the to `<Rules>` section of your `.ruleset` file:
+**StyleCop's default ruleset is extremely opinionated and I recommend disabling rules that don't bring value to your team.** For example, the [SA1200](https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1200.md) rule requires that `using` statements be placed within the `namespace` declaration. While there's nothing wrong with this coding style, it's not widely used since Visual Studio puts `using` statements outside the namespace when you create a new C# file. Both conventions are [equally valid](https://stackoverflow.com/q/125319/752601), so I recommend disabling this rule. You can do this by adding a line to your `.editorconfig`:
 
-```xml
-<!-- Using directive should appear within a namespace declaration -->
-<Rule Id="SA1200" Action="None" />
+```python
+# Using directive should appear within a namespace declaration
+dotnet_diagnostic.SA1200.severity = None
 ```
 
 As you go through each StyleCop violation, you will encounter rules that are actually helpful. In every instance, I was able to automatically fix the violations across my entire solution via the quick fix menu.
@@ -82,7 +78,7 @@ As you go through each StyleCop violation, you will encounter rules that are act
 
 **StyleCop is a good tool and I recommend using it.**
 
-The initial setup is not the most intuitive and I didn't agree with many of the rules (27 to be precise), _but_, it really cleaned up my codebase and the automatic code fixes are awesome.
+I didn't agree with many of StyleCop's rules (27 to be precise), _but_, it really cleaned up my codebase and the automatic code fixes are awesome. I am slightly worried that StyleCop will become a distraction when I get back to real development, but we'll see.
 
 As the name suggests, StyleCop is primarily concerned with code **style**, not correctness. If we want to fix bugs in our code, we'll have to keep looking...
 
@@ -100,10 +96,6 @@ Edit the `Default.Build.props` file next to your solution to install SonarAnalyz
 
 ```xml
 <Project>
-  <PropertyGroup>
-    <CodeAnalysisRuleSet>$(SolutionDir)MyRuleset.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-
   <ItemGroup>
     <PackageReference
       Include="StyleCop.Analyzers"
@@ -121,7 +113,7 @@ Edit the `Default.Build.props` file next to your solution to install SonarAnalyz
 </Project>
 ```
 
-Multiple ruleset files are not supported, so your SonarLint rule customizations will go in the same `.ruleset` file we created earlier. [Here's my completed ruleset file.](https://gist.github.com/srmagura/73617725775de060800625d3fc466443) You can safely delete the StyleCop stuff if you're not using it.
+Your SonarLint rule customizations will go in the same `.editorconfig` file we created earlier. [Here's my completed `.editorconfig`.](https://gist.github.com/srmagura/744ec1f356515eb3fe4b829f89c21a8c) You can safely delete the StyleCop stuff if you're not using it.
 
 Once that's done, rebuild the solution and you should see new warnings.
 
@@ -149,7 +141,7 @@ By addressing each SonarLint warning, I was able to
 
 [ReSharper](https://www.jetbrains.com/resharper/) is a Visual Studio extension from JetBrains that adds advanced refactoring and static analysis. I used ReSharper for the first two years of my professional career, and **found it to be a very helpful tool for learning C#'s advanced features.** That said, I stopped using ReSharper due to its multiple downsides and I haven't looked back.
 
-- It's expensive, starting at $299/year.
+- ReSharper starts at $129/year for individuals and $299/year per user for organizations.
 - Visual Studio + ReSharper is a slow and buggy mess.
 - Visual Studio's built-in refactorings have been steadily catching up to ReSharper's.
 - Once you're experienced with C#, ReSharper's warnings can be annoying rather than helpful.
@@ -160,4 +152,14 @@ JetBrains does have their own .NET IDE, [Rider](https://www.jetbrains.com/rider/
 
 I highly recommend SonarLint for identifying bugs and code smells.
 
-I'll be using StyleCop to enforce code formatting best practices, though dotnet-format is also a viable option. It's a tradeoff: StyleCop is more powerful but requires more setup and babysitting. dotnet-format is easy to install and can be completely automated as part of a precommit hook, but it won't fix many common style issues.
+I'll be using StyleCop to enforce code formatting best practices, though dotnet-format is also a viable option. It's a tradeoff: StyleCop is more powerful but requires babysitting. dotnet-format is easy to install and can be completely automated as part of a precommit hook, but it won't fix many common style issues.
+
+### Further Reading
+
+- [Blog post: Linting C# in 2019](https://medium.com/@michaelparkerdev/linting-c-in-2019-stylecop-sonar-resharper-and-roslyn-73e88af57ebd)
+- [Microsoft docs: Analyzer configuration](https://docs.microsoft.com/en-us/visualstudio/code-quality/use-roslyn-analyzers)
+
+### Update 2021-10-05
+
+- Replace the now-deprecated `.ruleset` files with `.editorconfig`. Huge thanks to Honza Rameš for pointing this out!
+- Clarify the pricing of ReSharper. Thanks Valentine Palazkov.
