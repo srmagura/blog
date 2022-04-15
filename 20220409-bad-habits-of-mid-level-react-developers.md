@@ -29,7 +29,7 @@ React has two built-in ways to store state: `useState` and `useReducer`. There a
 
 `useState` is perfectly fine when state updates are simple. For example, you can `useState` to track whether a checkbox is checked, or to track the `value` of a text input.
 
-That being said, **when state updates become even slightly complex, you should be using a reducer.** In particular, **you should be using a reducer ANY TIME you are storing an array in state.** In the context of our to-do list app, you should definitely manage the array of to-dos using a reducer, whether that's via `useReducer` or Redux.
+That being said, **when state updates become even slightly complex, you should be using a reducer.** In particular, **you should be using a reducer any time you are storing an array in state and the user can edit each item in the array.** In the context of our to-do list app, you should definitely manage the array of to-dos using a reducer, whether that's via `useReducer` or Redux.
 
 Reducers are beneficial because:
 
@@ -129,3 +129,5 @@ An application's CSS can quickly become a sprawling mess that no one understands
 I believe styles should be scoped to individual React components, with the CSS colocated with the React code. I highly recommend reading [Kent C. Dodds' excellent blog post on the benefits of colocation.](https://kentcdodds.com/blog/colocation) Scoping CSS to individual components leads to component reuse as the primary method of sharing styles and prevents issues where styles are accidentally applied to the wrong elements.
 
 You can implement component-scoped, colocated styles with the help of [Emotion](https://emotion.sh/), [styled-components](https://styled-components.com/), or [CSS Modules](https://css-tricks.com/css-modules-part-1-need/), among other similar libraries. My personal preference is Emotion with the `css` prop.
+
+**Update 2022-04-15:** Clarified my statement that you should "always" use a reducer when the state is an array.
