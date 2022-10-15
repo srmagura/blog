@@ -11,19 +11,23 @@ As the name suggests, CSS-in-JS allows you to style your React components by wri
 ```tsx
 // @emotion/react (css prop), with object styles
 function ErrorMessage({ children }) {
-  return <div css={{
-    color: 'red',
-    fontWeight: 'bold'
-  }}>
-    {children}
-  </div>
+  return (
+    <div
+      css={{
+        color: "red",
+        fontWeight: "bold",
+      }}
+    >
+      {children}
+    </div>
+  );
 }
 
 // styled-components or @emotion/styled, with string styles
 const ErrorMessage = styled.div`
   color: red;
   font-weight: bold;
-`
+`;
 ```
 
 [styled-components](https://styled-components.com/) and [Emotion](https://emotion.sh/) are the most popular CSS-in-JS libraries in the React community. While I have only used Emotion, I believe virtually all points in this article apply to styled-components as well.
@@ -42,7 +46,7 @@ Before we get into the nitty-gritty of specific CSS-in-JS coding patterns and th
 .row {
   padding: 0.5rem;
   border: 1px solid #ddd;
-} 
+}
 ```
 
 Several months later when you've completely forgotten about the list view, you create another component that has rows. Naturally, you set `className="row"` on these elements. Now the new component's rows have an unsightly border and you have no idea why! While this type of problem can be solved by using longer class names or more specific selectors, it's still on you as the developer to ensure there are no class name conflicts.
@@ -50,9 +54,7 @@ Several months later when you've completely forgotten about the list view, you c
 CSS-in-JS completely solves this problem by making styles locally-scoped by default. If you were to write your list view row as
 
 ```tsx
-<div css={{ padding: '0.5rem', border: '1px solid #ddd' }}>
-  ...
-</div>
+<div css={{ padding: "0.5rem", border: "1px solid #ddd" }}>...</div>
 ```
 
 there is no way the padding and border can accidentally get applied to unrelated elements.
@@ -72,22 +74,24 @@ The problem is that it's hard to implement colocation when using plain CSS, sinc
 ```tsx
 // colors.ts
 export const colors = {
-  primary: '#0d6efd',
-  border: '#ddd',
+  primary: "#0d6efd",
+  border: "#ddd",
   /* ... */
-}
+};
 
 // MyComponent.tsx
 function MyComponent({ fontSize }) {
-    return (
-      <p css={{ 
-        color: colors.primary, 
-        fontSize, 
-        border: `1px solid ${colors.border}` 
-      }}>
-        ...
-      </p>
-    )
+  return (
+    <p
+      css={{
+        color: colors.primary,
+        fontSize,
+        border: `1px solid ${colors.border}`,
+      }}
+    >
+      ...
+    </p>
+  );
 }
 ```
 
@@ -105,16 +109,16 @@ As this example shows, you can use both JavaScript constants (e.g. `colors`) and
 
 3. **CSS-in-JS clutters the React DevTools.** For each element that uses the `css` prop, Emotion will render `<EmotionCssPropInternal>` and `<Insertion>` components. If you are using the `css` prop on many elements, Emotion's internal components can really clutter up the React DevTools, as seen here:
 
-![The React DevTools displaying many internal Emotion components](devtools.png)
+![The React DevTools displaying many internal Emotion components](react-devtools.png)
 
 ### The Ugly
 
 1. **Frequently inserting CSS rules forces the browser to do a lot of extra work.** [  
-Sebastian Markbåge](https://github.com/sebmarkbage), member of the React core team and the original designer of React Hooks, wrote an [extremely informative discussion](https://github.com/reactwg/react-18/discussions/110) in the React 18 working group about how CSS-in-JS libraries would need to change to work with React 18, and about the future of runtime CSS-in-JS in general. In particular, he says:
+   Sebastian Markbåge](https://github.com/sebmarkbage), member of the React core team and the original designer of React Hooks, wrote an [extremely informative discussion](https://github.com/reactwg/react-18/discussions/110) in the React 18 working group about how CSS-in-JS libraries would need to change to work with React 18, and about the future of runtime CSS-in-JS in general. In particular, he says:
 
 > In concurrent rendering, React can yield to the browser between renders. If you insert a new rule in a component, then React yields, the browser then have to see if those rules would apply to the existing tree. So it recalculates the style rules. Then React renders the next component, and then that component discovers a new rule and it happens again.
 >
-> **This effectively causes a recalculation of all CSS rules against all DOM nodes every frame while React is rendering.**  This is VERY slow.
+> **This effectively causes a recalculation of all CSS rules against all DOM nodes every frame while React is rendering.** This is VERY slow.
 
 The worst thing about this problem is that it's not a fixable issue (within the context of runtime CSS-in-JS). Runtime CSS-in-JS libraries work by inserting new style rules when components render, and this is bad for performance on a fundamental level.
 
@@ -124,9 +128,9 @@ The worst thing about this problem is that it's not a fixable issue (within the 
 
 While the root cause varies from issue to issue, there are some common themes:
 
-* Multiple instances of Emotion get loaded at once. This can cause problems even if the multiple instances are all the same version of Emotion. [(Example issue)](https://github.com/emotion-js/emotion/issues/2639)
-* Component libraries often do not give you full control over the order in which styles are inserted. [(Example issue)](https://github.com/emotion-js/emotion/issues/2803)
-* Emotion's SSR support works differently between React 17 and React 18. This was necessary for compatibility with React 18's streaming SSR. [(Example issue)](https://github.com/emotion-js/emotion/issues/2725)
+- Multiple instances of Emotion get loaded at once. This can cause problems even if the multiple instances are all the same version of Emotion. [(Example issue)](https://github.com/emotion-js/emotion/issues/2639)
+- Component libraries often do not give you full control over the order in which styles are inserted. [(Example issue)](https://github.com/emotion-js/emotion/issues/2803)
+- Emotion's SSR support works differently between React 17 and React 18. This was necessary for compatibility with React 18's streaming SSR. [(Example issue)](https://github.com/emotion-js/emotion/issues/2725)
 
 And believe me, these sources of complexity are just the tip of the iceberg. (If you're feeling brave, take a look at the [TypeScript definitions for `@emotion/styled`](https://github.com/emotion-js/emotion/blob/8a163746f0de5c6a43052db37f14c36d703be7b9/packages/styled/types/base.d.ts).)
 
@@ -138,7 +142,7 @@ This section focuses on the performance impact of Emotion, **as it was used in t
 
 ### Serialization Inside of Render vs. Outside of Render
 
- _Style serialization_ refers to the process by which Emotion takes your CSS string or object styles and converts them to a plain CSS string that can be inserted into the document. Emotion also computes a hash of the plain CSS during serialization — this hash is what you see in the generated class names, e.g. `css-15nl2r3`.
+_Style serialization_ refers to the process by which Emotion takes your CSS string or object styles and converts them to a plain CSS string that can be inserted into the document. Emotion also computes a hash of the plain CSS during serialization — this hash is what you see in the generated class names, e.g. `css-15nl2r3`.
 
 While I have not measured this, I believe one of the most significant factors in how Emotion performs is whether style serialization is performed inside or outside of the React render cycle.
 
@@ -147,12 +151,14 @@ The examples in the Emotion docs perform serialization inside render, like this:
 ```tsx
 function MyComponent() {
   return (
-    <div css={{
-       backgroundColor: 'blue',
-       width: 100,
-       height: 100
-    }} />
-  )
+    <div
+      css={{
+        backgroundColor: "blue",
+        width: 100,
+        height: 100,
+      }}
+    />
+  );
 }
 ```
 
@@ -162,15 +168,13 @@ A more performant approach is to move the styles outside of the component, so th
 
 ```tsx
 const myCss = css({
-  backgroundColor: 'blue',
+  backgroundColor: "blue",
   width: 100,
-  height: 100
+  height: 100,
 });
 
 function MyComponent() {
-  return (
-    <div css={myCss} />
-  )
+  return <div css={myCss} />;
 }
 ```
 
@@ -191,7 +195,7 @@ For the test,
 - We'll force the top-most `<BrowseMembers>` component to render each second, and record the times for the first 10 renders.
 - React Strict Mode is off. (It effectively doubles the render times you see in the profiler.)
 
-I profiled the page using the React DevTools and got **54.3 ms** as the average of the first 10 render times. 
+I profiled the page using the React DevTools and got **54.3 ms** as the average of the first 10 render times.
 
 My personal rule of thumb is that a React component should take 16 ms or less to render, since 1 frame at 60 frames per second is 16.67 ms. The Member Browser is currently over 3 times this figure, so it's a pretty heavyweight component.
 
@@ -219,10 +223,9 @@ Here is the raw data for those who are curious:
 
 ![Spreadsheet showing render times between Emotion and non-Emotion Member Browser](spreadsheet.png)
 
-
 ## Our New Styling System
 
-After we made up our minds to switch away from CSS-in-JS, the obvious question is: what should we be using instead? Ideally, we want a styling system that has performance similar to that of plain CSS while keeping as many of the benefits of CSS-in-JS as possible. Here are the primary benefits of CSS-in-JS that I described in the section titled "The Good": 
+After we made up our minds to switch away from CSS-in-JS, the obvious question is: what should we be using instead? Ideally, we want a styling system that has performance similar to that of plain CSS while keeping as many of the benefits of CSS-in-JS as possible. Here are the primary benefits of CSS-in-JS that I described in the section titled "The Good":
 
 1. Styles are locally-scoped.
 2. Styles are colocated with the components they apply to.
@@ -241,9 +244,7 @@ Fortunately, there is an easy solution to this problem — Sass Modules, which a
 One concern the team had about switching from Emotion to Sass Modules is that it would be less convenient to apply extremely common styles, like `display: flex`. Before, we would write:
 
 ```tsx
-<FlexH alignItems="center">
-  ...
-</FlexH>
+<FlexH alignItems="center">...</FlexH>
 ```
 
 To do this using only Sass Modules, we would have to open the `.module.scss` file and create a class that applies the styles `display: flex` and `align-items: center`. It's not the end of the world, but it's definitely less convenient.
@@ -251,17 +252,14 @@ To do this using only Sass Modules, we would have to open the `.module.scss` fil
 To improve the DX around this, we decided to bring in a utility class system. If you aren't familiar with utility classes, they are CSS classes that set a single CSS property on the element. Usually, you will combine multiple utility classes to get the desired styles. For the example above, you would write something like this:
 
 ```tsx
-<div className="d-flex align-items-center">
-  ...
-</div>
+<div className="d-flex align-items-center">...</div>
 ```
 
-[Bootstrap](https://getbootstrap.com/) and [Tailwind](https://tailwindcss.com/) are the most popular CSS frameworks that offer utility classes. These libraries have put a lot of design effort into their utility systems, so it made the most sense to adopt one of them instead of rolling our own. I had already been using Bootstrap for years, so we went with Bootstrap. While you can bring in the Bootstrap utility classes as a pre-built CSS file, we needed to customize the classes to fit our existing styling system, so I copied the relevant parts of the Bootstrap source code into our project. 
+[Bootstrap](https://getbootstrap.com/) and [Tailwind](https://tailwindcss.com/) are the most popular CSS frameworks that offer utility classes. These libraries have put a lot of design effort into their utility systems, so it made the most sense to adopt one of them instead of rolling our own. I had already been using Bootstrap for years, so we went with Bootstrap. While you can bring in the Bootstrap utility classes as a pre-built CSS file, we needed to customize the classes to fit our existing styling system, so I copied the relevant parts of the Bootstrap source code into our project.
 
 We've been using Sass Modules and utility classes for new components for several weeks now and are quite happy with it. The DX is similar to that of Emotion, and the runtime performance is vastly superior.
 
 > Side note: We're also using the [typed-scss-modules](https://www.npmjs.com/package/typed-scss-modules) package to generate TypeScript definitions for our Sass Modules. Perhaps the largest benefit of this is that it allowed us to define a `utils()` helper function that works like [classnames](https://www.npmjs.com/package/classnames), except it only accepts valid utility class names as arguments.
-
 
 ### A Note about Compile-Time CSS-in-JS
 
@@ -285,7 +283,7 @@ Thanks for reading this deep dive into runtime CSS-in-JS. Like any technology, i
 
 ## About Spot
 
-At [Spot](https://www.spotvirtual.com/), we're building the future of remote work. When companies go remote, they often lose the sense of connection and culture that was present in the office. Spot is a next-gen communication platform that brings your team together by combining traditional messaging and video conferencing features with the ability to create & customize your own 3D virtual office. Please check us out if that sounds interesting! 
+At [Spot](https://www.spotvirtual.com/), we're building the future of remote work. When companies go remote, they often lose the sense of connection and culture that was present in the office. Spot is a next-gen communication platform that brings your team together by combining traditional messaging and video conferencing features with the ability to create & customize your own 3D virtual office. Please check us out if that sounds interesting!
 
 P.S. We're looking for talented software engineers to join the team! [See here for details.](https://www.spotvirtual.com/careers/)
 
